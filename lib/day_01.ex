@@ -3,14 +3,17 @@ defmodule Day01 do
     "data/day_01.txt"
     |> read_the_input()
     |> parse()
-    |> play_the_game()
+    |> play_the_game_p1()
   end
 
   def find_the_answer_p2() do
-    nil
+    "data/day_01.txt"
+    |> read_the_input()
+    |> parse()
+    |> play_the_game_p2()
   end
 
-  def play_the_game(input) do
+  def play_the_game_p1(input) do
     {left_side, right_side} = input
 
     left_list = Enum.sort(left_side)
@@ -24,6 +27,21 @@ defmodule Day01 do
       right_item = Enum.at(right_list, idx)
       distance = abs(left_item - right_item)
       [distance | acc]
+    end)
+    |> Enum.sum()
+  end
+
+  def play_the_game_p2(input) do
+    {left_side, right_side} = input
+
+    multipliers =
+      Enum.reduce(right_side, %{}, fn num, acc ->
+        Map.update(acc, num, 1, & &1 + 1)
+      end)
+
+    left_side
+    |> Enum.map(fn num ->
+      num * Map.get(multipliers, num, 0)
     end)
     |> Enum.sum()
   end
