@@ -36,7 +36,7 @@ defmodule Day01 do
 
     multipliers =
       Enum.reduce(right_side, %{}, fn num, acc ->
-        Map.update(acc, num, 1, & &1 + 1)
+        Map.update(acc, num, 1, &(&1 + 1))
       end)
 
     left_side
