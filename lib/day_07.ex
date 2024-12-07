@@ -6,6 +6,40 @@ defmodule Day07 do
     |> play_the_game_p1()
   end
 
+  def find_the_answer_p2() do
+    "data/day_07.txt"
+    |> read_the_input()
+    |> parse()
+    |> play_the_game_p2()
+  end
+
+  def play_the_game_p2(input) do
+    input
+    |> Enum.map(fn state ->
+      initial_state = %{
+        test_value: state.test_value,
+        instructions:
+          state.numbers
+          |> Enum.flat_map(&[&1, :op])
+          |> List.delete_at(-1)
+      }
+
+      instructions =
+        state.numbers
+        |> Enum.flat_map(&[&1, :op])
+        |> List.delete_at(-1)
+        |> transform_operations([:add, :mult, :concat])
+
+      %{initial_state | instructions: instructions}
+    end)
+    |> Enum.filter(fn state ->
+      state.instructions
+      |> Enum.any?(&(run_instructions(&1) == state.test_value))
+    end)
+    |> Enum.map(& &1.test_value)
+    |> Enum.sum()
+  end
+
   def play_the_game_p1(input) do
     input
     |> Enum.map(fn state ->
@@ -21,7 +55,7 @@ defmodule Day07 do
         state.numbers
         |> Enum.flat_map(&[&1, :op])
         |> List.delete_at(-1)
-        |> transform_operations()
+        |> transform_operations([:add, :mult])
 
       %{initial_state | instructions: instructions}
     end)
@@ -33,30 +67,10 @@ defmodule Day07 do
     |> Enum.sum()
   end
 
-  def run_instructions(instructions) do
-    # [81, :add, 40, :mult, 27]
-    instructions
-    |> Enum.reduce({0, :add}, fn
-      val, {total, current_op} when is_number(val) ->
-        new_total =
-          case current_op do
-            :add -> total + val
-            :mult -> total * val
-          end
-
-        {new_total, current_op}
-
-      new_op, {total, _op} ->
-        {total, new_op}
-    end)
-    |> elem(0)
-  end
-
-  def transform_operations(instructions) do
+  def transform_operations(instructions, ops) do
     # [81, :op, 40, :op, 27]
-    ops = [:add, :mult]
     ops_count = Enum.count(instructions, &(&1 == :op))
-    variants_count = round(:math.pow(2, ops_count)) - 1
+    variants_count = round(:math.pow(length(ops), ops_count)) - 1
 
     0..variants_count
     |> Enum.map(fn variant_index ->
@@ -81,6 +95,26 @@ defmodule Day07 do
       result
       |> Enum.reverse()
     end)
+  end
+
+  def run_instructions(instructions) do
+    # [81, :add, 40, :mult, 27]
+    instructions
+    |> Enum.reduce({0, :add}, fn
+      val, {total, current_op} when is_number(val) ->
+        new_total =
+          case current_op do
+            :add -> total + val
+            :mult -> total * val
+            :concat -> String.to_integer("#{total}#{val}")
+          end
+
+        {new_total, current_op}
+
+      new_op, {total, _op} ->
+        {total, new_op}
+    end)
+    |> elem(0)
   end
 
   def parse(input) do
