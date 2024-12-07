@@ -16,21 +16,14 @@ defmodule Day07 do
   def play_the_game_p2(input) do
     input
     |> Enum.map(fn state ->
-      initial_state = %{
+      %{
         test_value: state.test_value,
         instructions:
           state.numbers
           |> Enum.flat_map(&[&1, :op])
           |> List.delete_at(-1)
+          |> transform_operations([:add, :mult, :concat])
       }
-
-      instructions =
-        state.numbers
-        |> Enum.flat_map(&[&1, :op])
-        |> List.delete_at(-1)
-        |> transform_operations([:add, :mult, :concat])
-
-      %{initial_state | instructions: instructions}
     end)
     |> Enum.filter(fn state ->
       state.instructions
@@ -43,21 +36,14 @@ defmodule Day07 do
   def play_the_game_p1(input) do
     input
     |> Enum.map(fn state ->
-      initial_state = %{
+      %{
         test_value: state.test_value,
         instructions:
           state.numbers
           |> Enum.flat_map(&[&1, :op])
           |> List.delete_at(-1)
+          |> transform_operations([:add, :mult])
       }
-
-      instructions =
-        state.numbers
-        |> Enum.flat_map(&[&1, :op])
-        |> List.delete_at(-1)
-        |> transform_operations([:add, :mult])
-
-      %{initial_state | instructions: instructions}
     end)
     |> Enum.filter(fn state ->
       state.instructions
