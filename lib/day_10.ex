@@ -6,12 +6,32 @@ defmodule Day10 do
     |> play_the_game_p1()
   end
 
-  def play_the_game_p1(input) do
-    starting_positions =
-      input
-      |> Enum.filter(fn {_k, v} -> v == 0 end)
+  def find_the_answer_p2() do
+    "data/day_10.txt"
+    |> read_the_input()
+    |> parse()
+    |> play_the_game_p2()
+  end
 
-    starting_positions
+  def play_the_game_p1(input) do
+    input
+    |> Enum.filter(fn {_k, v} -> v == 0 end)
+    |> Enum.reduce([], fn {{x, y}, _}, acc ->
+      state =
+        dfs(%{
+          board: input,
+          trails: [],
+          start_at: {x, y}
+        })
+
+      [length(Enum.uniq(state.trails)) | acc]
+    end)
+    |> Enum.sum()
+  end
+
+  def play_the_game_p2(input) do
+    input
+    |> Enum.filter(fn {_k, v} -> v == 0 end)
     |> Enum.reduce([], fn {{x, y}, _}, acc ->
       state =
         dfs(%{
@@ -32,7 +52,7 @@ defmodule Day10 do
 
     state =
       if(current_location_h == 9,
-        do: %{state | trails: Enum.uniq([{current_x, current_y} | state.trails])},
+        do: %{state | trails: [{current_x, current_y} | state.trails]},
         else: state
       )
 
