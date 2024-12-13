@@ -6,6 +6,47 @@ defmodule Day13 do
     |> play_the_game_p1()
   end
 
+  def find_the_answer_p2() do
+    "data/day_13.txt"
+    |> read_the_input()
+    |> parse()
+    |> play_the_game_p2()
+  end
+
+  # Thanks Reddit <3
+  # Thanks Math
+  # https://www.reddit.com/r/adventofcode/comments/1hd7irq/2024_day_13_an_explanation_of_the_mathematics/
+  def play_the_game_p2(inputs) do
+    inputs
+    |> Enum.map(fn input ->
+      p_x = input.prize.x + 10_000_000_000_000
+      p_y = input.prize.y + 10_000_000_000_000
+
+      # A = (p_x*b_y - p_y*b_x) / (a_x*b_y - a_y*b_x)
+      a_presses =
+        (p_x * input.b.y - p_y * input.b.x) /
+          (input.a.x * input.b.y - input.a.y * input.b.x)
+
+      # B = (a_x*p_y - a_y*p_x) / (a_x*b_y - a_y*b_x)
+      b_presses =
+        (input.a.x * p_y - input.a.y * p_x) /
+          (input.a.x * input.b.y - input.a.y * input.b.x)
+
+      if a_presses == trunc(a_presses) and b_presses == trunc(b_presses) do
+        %{
+          a_presses: trunc(a_presses),
+          b_presses: trunc(b_presses),
+          total_cost: trunc(a_presses * 3 + b_presses * 1)
+        }
+      else
+        nil
+      end
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.map(& &1.total_cost)
+    |> Enum.sum()
+  end
+
   def play_the_game_p1(inputs) do
     inputs
     |> Enum.map(fn input ->
