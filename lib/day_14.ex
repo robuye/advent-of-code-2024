@@ -6,6 +6,13 @@ defmodule Day14 do
     |> play_the_game_p1()
   end
 
+  def find_the_answer_p2() do
+    "data/day_14.txt"
+    |> read_the_input()
+    |> parse()
+    |> play_the_game_p2()
+  end
+
   def play_the_game_p1(robots) do
     {width, height} = {101, 103}
 
@@ -34,6 +41,70 @@ defmodule Day14 do
     end)
     |> Enum.map(fn {_q, robots} -> length(robots) end)
     |> Enum.product()
+  end
+
+  def play_the_game_p2(robots) do
+    {width, height} = {101, 103}
+
+    1..10_000
+    |> Enum.reduce_while(robots, fn i, robots ->
+      new_robots =
+        robots
+        |> Enum.map(fn robot ->
+          make_a_move(robot, %{width: width, height: height})
+        end)
+
+      if look_for_christmas_tree(new_robots) do
+        IO.puts("Found a christmas tree in move #{i}")
+        print_board(new_robots)
+        {:halt, new_robots}
+      else
+        {:cont, new_robots}
+      end
+    end)
+
+    true
+  end
+
+  def look_for_christmas_tree(robots) do
+    robots = Enum.map(robots, & &1.position)
+
+    lines =
+      1..100
+      |> Enum.map(fn y ->
+        1..100
+        |> Enum.reduce("", fn x, acc ->
+          if %{x: x, y: y} in robots do
+            acc <> "#"
+          else
+            acc <> " "
+          end
+        end)
+      end)
+
+    lines
+    |> Enum.any?(&String.contains?(&1, "##########"))
+  end
+
+  def print_board(robots) do
+    robots = Enum.map(robots, & &1.position)
+
+    1..100
+    |> Enum.map(fn y ->
+      1..100
+      |> Enum.reduce("", fn x, acc ->
+        if %{x: x, y: y} in robots do
+          acc <> "#"
+        else
+          acc <> " "
+        end
+      end)
+    end)
+    |> Enum.each(&IO.puts/1)
+
+    IO.puts("")
+
+    :ok
   end
 
   def make_a_move(robot, opts) do
