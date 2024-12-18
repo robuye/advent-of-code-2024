@@ -12,20 +12,30 @@ defmodule Day18 do
       "data/day_18.txt"
       |> read_the_input()
 
-    no_way_out =
-      3450..1024//-1
-      |> Enum.reduce_while(nil, fn i, _acc ->
-        raw_input
-        |> parse(i)
-        |> play_the_game_p1()
-        |> case do
-          {true, _} -> {:halt, i}
-          {false, _} -> {:cont, i}
+    {last_success_at, _} =
+      Stream.iterate(0, &(&1 + 1))
+      |> Enum.reduce_while({1, 1_000_000_000_000}, fn _i, {min, max} ->
+        mid = div(min + max, 2)
+
+        if min == mid or max == mid do
+          {:halt, {min, max}}
+        else
+          {new_min, new_max} =
+            raw_input
+            |> parse(mid)
+            |> play_the_game_p1()
+            |> case do
+              {true, _} -> {mid, max}
+              {false, _} -> {min, mid}
+            end
+
+          {:cont, {new_min, new_max}}
         end
       end)
 
-    String.split(raw_input, "\n")
-    |> Enum.at(no_way_out)
+    raw_input
+    |> String.split("\n")
+    |> Enum.at(last_success_at)
   end
 
   def play_the_game_p1(input) do
