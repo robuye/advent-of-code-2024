@@ -4,6 +4,28 @@ defmodule Day18 do
     |> read_the_input()
     |> parse(1024)
     |> play_the_game_p1()
+    |> elem(1)
+  end
+
+  def find_the_answer_p2() do
+    raw_input =
+      "data/day_18.txt"
+      |> read_the_input()
+
+    no_way_out =
+      3450..1024//-1
+      |> Enum.reduce_while(nil, fn i, _acc ->
+        raw_input
+        |> parse(i)
+        |> play_the_game_p1()
+        |> case do
+          {true, _} -> {:halt, i}
+          {false, _} -> {:cont, i}
+        end
+      end)
+
+    String.split(raw_input, "\n")
+    |> Enum.at(no_way_out)
   end
 
   def play_the_game_p1(input) do
@@ -35,13 +57,10 @@ defmodule Day18 do
           end
         end)
 
-      path
-      |> Enum.reduce(state.map, fn move, map ->
-        Map.put(map, {move.x, move.y}, "*")
-      end)
-      |> print_grid()
+      last_step = Enum.at(path, -1)
+      completed = last_step.x == 70 and last_step.y == 70
 
-      length(path)
+      {completed, length(path)}
     end)
   end
 
@@ -55,7 +74,7 @@ defmodule Day18 do
         [current_move | state.visited]
         |> Enum.filter(& &1)
 
-      if {current_move.x, current_move.y} == state.stop_at do
+      if is_nil(current_move) or {current_move.x, current_move.y} == state.stop_at do
         {:halt, %{state | visited: visited, candidates: []}}
       else
         neightbors =
@@ -107,7 +126,7 @@ defmodule Day18 do
     |> File.read!()
   end
 
-  defp print_grid(map) do
+  def print_grid(map) do
     # %{{x, y} => <character to print>}
 
     {{max_x, _}, _} = Enum.max_by(map, fn {{x, _y}, _} -> x end)
